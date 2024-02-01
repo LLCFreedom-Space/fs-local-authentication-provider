@@ -29,12 +29,12 @@ Provides methods to manage local authentication on iOS devices, including:
 Add the package to your Package.swift file:
 ```swift
 dependencies: [
-.package(url: "https://github.com/LLCFreedom-Space/fs-user-defaults-store", from: "1.0.0")
+.package(url: "https://github.com/LLCFreedom-Space/fs-local-authentication-provider", from: "1.0.0")
 ]
 ```
 Import the package in your Swift files:
 ```swift
-import UserDefaultsStore
+import LocalAuthenticationProvider
 ```
 
 ## Usage:
