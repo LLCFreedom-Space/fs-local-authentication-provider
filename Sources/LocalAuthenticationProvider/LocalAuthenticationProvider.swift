@@ -30,7 +30,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// Checks if biometric authentication is available on the device.
     /// - Returns: `true` if biometric authentication is available, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during the check.
-    @discardableResult public func checkBiometricAvailable() async throws -> Bool {
+    public func checkBiometricAvailable() async throws -> Bool {
         var error: NSError?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             return true
@@ -78,7 +78,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Parameter localizedReason: A string explaining why authentication is being requested.
     /// - Returns: `true` if authentication was successful, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
-    @discardableResult public func authenticate(localizedReason: String) async throws -> Bool {
+    public func authenticate(localizedReason: String) async throws -> Bool {
         if try await checkBiometricAvailable() {
             guard context.biometryType != .none else {
                 logger.error("\(#file) \(#function) User face or fingerprint were not recognized")
@@ -107,30 +107,15 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     public func getBiometricType() async -> BiometricType {
         let result = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         logger.log("\(#file) \(#function) evaluated policy with result \(result)")
-        if #available(iOS 17.0, macOS 14.0, *) {
-            switch context.biometryType {
-            case .none:
-                return .none
-            case .touchID:
-                return .touchID
-            case .faceID:
-                return .faceID
-            case .opticID:
-                return .opticID
-            @unknown default:
-                return .none
-            }
-        } else {
-            switch context.biometryType {
-            case .none:
-                return .none
-            case .touchID:
-                return .touchID
-            case .faceID:
-                return .faceID
-            @unknown default:
-                return .none
-            }
+        switch context.biometryType {
+        case .none:
+            return .none
+        case .touchID:
+            return .touchID
+        case .faceID:
+            return .faceID
+        @unknown default:
+            return .none
         }
     }
 }
