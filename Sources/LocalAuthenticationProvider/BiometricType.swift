@@ -19,7 +19,7 @@ public enum BiometricType {
     case touchID
     
     /// Iris recognition using Optic ID (available on iOS 17.0 and later).
-    @available(iOS 17.0, *)
+    @available(iOS 17.0, macOS 14.0, *)
     case opticID
     
     /*
