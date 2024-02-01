@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "FSLocalAuthenticationProvider",
+    name: "fs-local-authentication-provider",
     platforms: [
         .iOS(.v16),
         .macOS(.v13)
