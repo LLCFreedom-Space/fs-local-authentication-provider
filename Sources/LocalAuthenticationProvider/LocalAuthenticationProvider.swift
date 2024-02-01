@@ -107,21 +107,30 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     public func getBiometricType() async -> BiometricType {
         let result = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         logger.log("\(#file) \(#function) evaluated policy with result \(result)")
-        switch context.biometryType {
-        case .none:
-            return .none
-        case .touchID:
-            return .touchID
-        case .faceID:
-            return .faceID
-        case .opticID:
-            if #available(iOS 17.0, macOS 14.0, *) {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            switch context.biometryType {
+            case .none:
+                return .none
+            case .touchID:
+                return .touchID
+            case .faceID:
+                return .faceID
+            case .opticID:
                 return .opticID
-            } else {
+            @unknown default:
                 return .none
             }
-        @unknown default:
-            return .none
+        } else {
+            switch context.biometryType {
+            case .none:
+                return .none
+            case .touchID:
+                return .touchID
+            case .faceID:
+                return .faceID
+            @unknown default:
+                return .none
+            }
         }
     }
 }
