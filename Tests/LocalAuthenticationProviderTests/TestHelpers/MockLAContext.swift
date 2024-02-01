@@ -29,9 +29,9 @@ final class MockLAContext: LAContext {
     /// - biometryType: The biometric type to simulate.
     init(
         successEvaluatePolicies: [LAPolicy] = [],
-         canEvaluatePolicyError: NSError? = nil,
-         canEvaluatePolicies: [LAPolicy] = [],
-         biometryType: LABiometryType = .none
+        canEvaluatePolicyError: NSError? = nil,
+        canEvaluatePolicies: [LAPolicy] = [],
+        biometryType: LABiometryType = .none
     ) {
         self.successEvaluatePolicies = successEvaluatePolicies
         self.canEvaluatePolicyError = canEvaluatePolicyError
