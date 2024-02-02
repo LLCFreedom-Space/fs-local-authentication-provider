@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import LocalAuthentication
 
 /// Represents the different types of biometric authentication available on a device.
-public enum BiometricType {
+public enum BiometricType: String {
     /// No biometric authentication is available.
     case none
     
@@ -22,18 +23,25 @@ public enum BiometricType {
     @available(iOS 17.0, macOS 14.0, *)
     case opticID
     
-    /*
-     public var description: String {
-     switch self {
-     case .none:
-     return "No Biometrics"
-     case .faceID:
-     return "Face ID"
-     case .touchID:
-     return "Touch ID"
-     case .opticID:
-     return "Optic ID"
-     }
-     }
-     */
+    init(type: LABiometryType) {
+        if type == .none {
+            self = .none
+            return
+        }
+        if type == .faceID {
+            self = .faceID
+            return
+        }
+        if type == .touchID {
+            self = .touchID
+            return
+        }
+        if #available(iOS 17.0, macOS 14.0, *) {
+            if type == .opticID {
+                self = .opticID
+                return
+            }
+        }
+        self = .none
+    }
 }
