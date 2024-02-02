@@ -27,7 +27,6 @@ public protocol LocalAuthenticationProviderProtocol {
     /// - Parameter localizedReason: A string explaining why authentication is being requested.
     /// - Returns: `true` if authentication was successful, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
-    ///
     func authenticate(localizedReason: String) async throws -> Bool
     
     /// Retrieves the type of biometric authentication available on the device.

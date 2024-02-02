@@ -40,21 +40,21 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
             if let error {
                 switch error.code {
                 case LocalAuthenticationError.denied:
-                    logger.error("\(#file) \(#function) Denied access on local authentication with: \(error.localizedDescription)")
+                    logger.error("\(#function) Denied access on local authentication with: \(error.localizedDescription)")
                     throw LocalAuthenticationError.deniedAccess
                 case LocalAuthenticationError.noBiometricsEnrolled:
                     if context.biometryType == .faceID {
-                        logger.error("\(#file) \(#function) Denied access on face id with: \(error.localizedDescription)")
+                        logger.error("\(#function) Denied access on face id with: \(error.localizedDescription)")
                         throw LocalAuthenticationError.noFaceIdEnrolled
                     } else if context.biometryType == .touchID {
-                        logger.error("\(#file) \(#function) Denied access on touch id with: \(error.localizedDescription)")
+                        logger.error("\(#function) Denied access on touch id with: \(error.localizedDescription)")
                         throw LocalAuthenticationError.noFingerprintEnrolled
                     } else {
-                        logger.error("\(#file) \(#function) Local Authentication Error: \(error.localizedDescription)")
+                        logger.error("\(#function) Local Authentication Error: \(error.localizedDescription)")
                         throw LocalAuthenticationError.biometricError
                     }
                 default:
-                    logger.error("\(#file) \(#function) Local Authentication Error: \(error.localizedDescription)")
+                    logger.error("\(#function) Local Authentication Error: \(error.localizedDescription)")
                     throw LocalAuthenticationError.biometricError
                 }
             }
@@ -81,7 +81,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     public func authenticate(localizedReason: String) async throws -> Bool {
         if try await checkBiometricAvailable() {
             guard context.biometryType != .none else {
-                logger.error("\(#file) \(#function) User face or fingerprint were not recognized")
+                logger.error("\(#function) User face or fingerprint were not recognized")
                 throw LocalAuthenticationError.biometricError
             }
             
@@ -95,7 +95,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
                 throw error
             }
             
-            logger.error("\(#file) \(#function) User face or fingerprint were not recognized")
+            logger.error("\(#function) User face or fingerprint were not recognized")
             return false
         } else {
             return false
@@ -106,16 +106,21 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: The available biometric type (.none, .touchID, .faceID, or .opticID if available).
     public func getBiometricType() async -> BiometricType {
         let result = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
-        logger.log("\(#file) \(#function) evaluated policy with result \(result)")
-        switch context.biometryType {
-        case .none:
-            return .none
-        case .touchID:
-            return .touchID
-        case .faceID:
-            return .faceID
-        @unknown default:
+        logger.log("\(#function) evaluated policy with result \(result)")
+        if context.biometryType == .none {
             return .none
         }
+        if context.biometryType == .faceID {
+            return .faceID
+        }
+        if context.biometryType == .touchID {
+            return .touchID
+        }
+        if #available(iOS 17.0, macOS 14.0, *) {
+            if context.biometryType == .opticID {
+                return .opticID
+            }
+        }
+        return .none
     }
 }

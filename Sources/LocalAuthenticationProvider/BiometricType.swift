@@ -6,9 +6,10 @@
 //
 
 import Foundation
+import LocalAuthentication
 
 /// Represents the different types of biometric authentication available on a device.
-public enum BiometricType {
+public enum BiometricType: String {
     /// No biometric authentication is available.
     case none
     
@@ -21,19 +22,4 @@ public enum BiometricType {
     /// Iris recognition using Optic ID (available on iOS 17.0 and later).
     @available(iOS 17.0, macOS 14.0, *)
     case opticID
-    
-    /*
-     public var description: String {
-     switch self {
-     case .none:
-     return "No Biometrics"
-     case .faceID:
-     return "Face ID"
-     case .touchID:
-     return "Touch ID"
-     case .opticID:
-     return "Optic ID"
-     }
-     }
-     */
 }
