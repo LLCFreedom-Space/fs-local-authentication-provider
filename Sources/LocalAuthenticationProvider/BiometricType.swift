@@ -22,26 +22,4 @@ public enum BiometricType: String {
     /// Iris recognition using Optic ID (available on iOS 17.0 and later).
     @available(iOS 17.0, macOS 14.0, *)
     case opticID
-    
-    init(type: LABiometryType) {
-        if type == .none {
-            self = .none
-            return
-        }
-        if type == .faceID {
-            self = .faceID
-            return
-        }
-        if type == .touchID {
-            self = .touchID
-            return
-        }
-        if #available(iOS 17.0, macOS 14.0, *) {
-            if type == .opticID {
-                self = .opticID
-                return
-            }
-        }
-        self = .none
-    }
 }
