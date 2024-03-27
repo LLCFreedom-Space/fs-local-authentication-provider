@@ -32,7 +32,7 @@ jobs:
           $(xcrun --find docc) process-archive \
             transform-for-static-hosting /tmp/docbuild/Build/Products/Debug-iphoneos/LocalAuthenticationProvider.doccarchive \
             --output-path docs \
-            --hosting-base-path localauthenticationprovider;
+            --hosting-base-path fs-local-authentication-provider;
           echo "<script>window.location.href += \"/documentation/localauthenticationprovider\"</script>" > docs/index.html;
 
       - name: Upload artifact 📜
