@@ -16,7 +16,7 @@ Provides methods to manage local authentication on iOS devices, including:
 * Authenticating users using biometrics
 * Retrieving the available biometric type
 
-## Features:
+## Features
 
 * Clear and concise API for easy integration
 * Error handling for common authentication issues
@@ -24,30 +24,38 @@ Provides methods to manage local authentication on iOS devices, including:
 * Support for testing with a mock LAContext
 * Compatibility with iOS 10.0 and later
 
-## Installation:
+## Installation
 
 Add the package to your Package.swift file:
+
 ```swift
 dependencies: [
 .package(url: "https://github.com/LLCFreedom-Space/fs-local-authentication-provider", from: "1.0.0")
 ]
 ```
+
 Import the package in your Swift files:
+
 ```swift
 import LocalAuthenticationProvider
 ```
 
-## Usage:
+## Usage
 
 Import the library:
+
 ```swift
 import LocalAuthenticationProvider
 ```
+
 Create an instance of `LocalAuthenticationProvider`:
+
 ```swift
 let provider = LocalAuthenticationProvider()
 ```
+
 Use the provided methods to perform authentication tasks:
+
 ```swift
 // Check if biometric authentication is available
 if try await provider.checkBiometricAvailable() {
@@ -67,7 +75,7 @@ if try await provider.checkBiometricAvailable() {
 }
 ```
 
-## Contributions:
+## Contributions
 
 We welcome contributions to this project! Please feel free to open issues or pull requests to help improve the package.
 
