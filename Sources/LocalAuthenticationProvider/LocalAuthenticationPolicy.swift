@@ -14,9 +14,11 @@ public enum LocalAuthenticationPolicy: Int {
     /// Device owner will be authenticated by biometry or user password.
     case authentication = 2
 
+#if os(macOS)
     /// Device owner will be authenticated by Apple Watch.
     case watch = 3
 
     /// Device owner will be authenticated by biometry or Apple Watch.
     case biometricsOrWatch = 4
+#endif
 }

@@ -14,12 +14,14 @@ extension LAContext {
         switch policy {
         case .authentication:
             localPolicy = .deviceOwnerAuthentication
-        case .watch:
-            localPolicy = .deviceOwnerAuthenticationWithWatch
         case .biometrics:
             localPolicy = .deviceOwnerAuthenticationWithBiometrics
+#if os(macOS)
+        case .watch:
+            localPolicy = .deviceOwnerAuthenticationWithWatch
         case .biometricsOrWatch:
             localPolicy = .deviceOwnerAuthenticationWithBiometricsOrWatch
+#endif
         }
 
         return self.canEvaluatePolicy(localPolicy, error: error)
