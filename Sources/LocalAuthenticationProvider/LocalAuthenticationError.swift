@@ -28,10 +28,13 @@ import Foundation
 public enum LocalAuthenticationError: Error {
     // MARK: - Error codes for common local authentication errors.
     
-    /// -6
+    /// -5, LAError.Code.passcodeNotSet
+    public static let passcodeNotSet: Int = -5
+    
+    /// -6, LAError.Code.biometryNotAvailable
     public static let denied: Int = -6
     
-    /// -7
+    /// -7, LAError.Code.biometryNotEnrolled
     public static let noBiometricsEnrolled: Int = -7
     
     /// 0
@@ -51,6 +54,9 @@ public enum LocalAuthenticationError: Error {
     
     /// No fingerprints are enrolled on the device.
     case noFingerprintEnrolled
+    
+    /// A passcode isn’t set on the device.
+    case noPasscodeSet
     
     /// An underlying error occurred.
     ///
