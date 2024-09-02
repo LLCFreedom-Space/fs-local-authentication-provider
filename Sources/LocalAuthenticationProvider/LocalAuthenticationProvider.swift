@@ -49,20 +49,8 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `true` if biometric authentication is available, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during the check.
     public func checkBiometricAvailable(with policy: LocalAuthenticationPolicy) async throws -> Bool {
-        let localPolicy: LAPolicy
-        switch policy {
-        case .authentication:
-            localPolicy = .deviceOwnerAuthentication
-        case .watch:
-            localPolicy = .deviceOwnerAuthenticationWithWatch
-        case .biometrics:
-            localPolicy = .deviceOwnerAuthenticationWithBiometrics
-        case .biometricsOrWatch:
-            localPolicy = .deviceOwnerAuthenticationWithBiometricsOrWatch
-        }
-        
         var error: NSError?
-        if context.canEvaluatePolicy(localPolicy, error: &error) {
+        if context.canEvaluate(policy: policy, error: &error) {
             return true
         } else {
             if let error {
