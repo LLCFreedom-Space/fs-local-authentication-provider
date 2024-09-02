@@ -45,13 +45,24 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     }
     
     /// Checks if biometric authentication is available on the device.
+    /// - Parameter policy: The policy to evaluate.
     /// - Returns: `true` if biometric authentication is available, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during the check.
-    public func checkBiometricAvailable() async throws -> Bool {
+    public func checkBiometricAvailable(with policy: LocalAuthenticationPolicy) async throws -> Bool {
+        let localPolicy: LAPolicy
+        switch policy {
+        case .authentication:
+            localPolicy = .deviceOwnerAuthentication
+        case .watch:
+            localPolicy = .deviceOwnerAuthenticationWithWatch
+        case .biometrics:
+            localPolicy = .deviceOwnerAuthenticationWithBiometrics
+        case .biometricsOrWatch:
+            localPolicy = .deviceOwnerAuthenticationWithBiometricsOrWatch
+        }
+        
         var error: NSError?
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            return true
-        } else if context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error) {
+        if context.canEvaluatePolicy(localPolicy, error: &error) {
             return true
         } else {
             if let error {
@@ -87,7 +98,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `true` if biometric authentication was successfully set up, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during setup.
     public func setBiometricAuthentication(localizedReason: String) async throws -> Bool {
-        if try await checkBiometricAvailable() {
+        if try await checkBiometricAvailable(with: .biometrics) {
             return try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason)
         } else {
             return false
@@ -99,7 +110,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `true` if authentication was successful, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
     public func authenticate(localizedReason: String) async throws -> Bool {
-        if try await checkBiometricAvailable() {
+        if try await checkBiometricAvailable(with: .biometrics) {
             guard context.biometryType != .none else {
                 logger.error("\(#function) User face or fingerprint were not recognized")
                 throw LocalAuthenticationError.biometricError
