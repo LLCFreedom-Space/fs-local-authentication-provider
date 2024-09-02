@@ -28,9 +28,10 @@ import Foundation
 public protocol LocalAuthenticationProviderProtocol {
     /// Checks if biometric authentication is available on the device.
     ///
+    /// - Parameter policy: The policy to evaluate.
     /// - Returns: `true` if biometric authentication is available, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during the check.
-    func checkBiometricAvailable() async throws -> Bool
+    func checkBiometricAvailable(with policy: LocalAuthenticationPolicy) async throws -> Bool
     
     /// Sets up biometric authentication with the given localized reason, preparing for authentication but not initiating it immediately.
     ///

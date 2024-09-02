@@ -58,7 +58,7 @@ Use the provided methods to perform authentication tasks:
 
 ```swift
 // Check if biometric authentication is available
-if try await provider.checkBiometricAvailable() {
+if try await provider.checkBiometricAvailable(with: .biometrics) {
     // Set up biometric authentication
     if try await provider.setBiometricAuthentication(localizedReason: "Authenticate to access your data") {
         // Authenticate the user
