@@ -70,9 +70,12 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
                         logger.error("\(#function) Local Authentication Error: \(error.localizedDescription)")
                         throw LocalAuthenticationError.biometricError
                     }
+                case LocalAuthenticationError.passcodeNotSet:
+                    logger.error("\(#function) Check biometric auth available: \(error.localizedDescription)")
+                    throw LocalAuthenticationError.noPasscodeSet
                 default:
                     logger.error("\(#function) Local Authentication Error: \(error.localizedDescription)")
-                    throw LocalAuthenticationError.biometricError
+                    throw LocalAuthenticationError.error(error)
                 }
             }
             return false
