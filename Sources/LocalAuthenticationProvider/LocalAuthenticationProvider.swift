@@ -87,7 +87,15 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during setup.
     public func setBiometricAuthentication(localizedReason: String) async throws -> Bool {
         if try await checkBiometricAvailable(with: .biometrics) {
-            return try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason)
+            do {
+                return try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason)
+            } catch let error as LAError {
+                logger.error("\(#function) Failed to perform biometric authentication: \(error.localizedDescription)")
+                throw mapLAErrorToLocal(error)
+            } catch {
+                logger.error("\(#function) Unknown error: \(error.localizedDescription)")
+                throw error
+            }
         } else {
             return false
         }
@@ -141,5 +149,31 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
             }
         }
         return .none
+    }
+    
+    /// Maps an `LAError` to a corresponding `LocalAuthenticationError` for consistent error handling.
+    /// - Parameter laError: The `LAError` received from the Local Authentication framework.
+    /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
+    private func mapLAErrorToLocal(_ laError: LAError) -> LocalAuthenticationError {
+        switch laError.code {
+        case .userCancel, .userFallback, .systemCancel, .appCancel, .notInteractive:
+            return .userCanceled
+        case .authenticationFailed, .biometryLockout, .biometryDisconnected:
+            return .biometricError
+        case .passcodeNotSet:
+            return .noPasscodeSet
+        case .biometryNotAvailable, .biometryNotPaired:
+            return .deniedAccess
+        case .biometryNotEnrolled:
+            if context.biometryType == .faceID {
+                return .noFaceIdEnrolled
+            } else if context.biometryType == .touchID {
+                return .noFingerprintEnrolled
+            } else {
+                return .biometricError
+            }
+        default:
+            return .error(laError)
+        }
     }
 }
