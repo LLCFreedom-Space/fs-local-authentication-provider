@@ -57,9 +57,11 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
                 throw mapToLocalAuthenticationError(error, context: context, function: #function)
             } else {
                 throw mapToLocalAuthenticationError(
-                    NSError(domain: "LocalAuthenticationErrorDomain",
-                            code: LocalAuthenticationError.unknownError,
-                            userInfo: nil),
+                    NSError(
+                        domain: LAError.errorDomain,
+                        code: LocalAuthenticationError.unknownError,
+                        userInfo: nil
+                    ),
                     context: context,
                     function: #function
                 )
