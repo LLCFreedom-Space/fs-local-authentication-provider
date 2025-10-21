@@ -132,73 +132,89 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
         return .none
     }
     
-    /// Maps an `LAError` to a corresponding `LocalAuthenticationError` for consistent error handling.
-    /// - Parameter laError: The `LAError` received from the Local Authentication framework.
-    /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
-    private func mapToLocalAuthenticationError(
-        _ error: Error,
-        context: LAContext,
-        function: String
-    ) -> LocalAuthenticationError {
+    /// Maps an `Error` to a corresponding `LocalAuthenticationError` for consistent error handling.
+    /// - Parameters:
+    ///   - error: The original error thrown by the Local Authentication framework.
+    ///   - context: The `LAContext` used during authentication.
+    ///   - function: The name of the calling function for detailed logging.
+    /// - Returns: A `LocalAuthenticationError` that represents the mapped error condition.
+    private func mapToLocalAuthenticationError(_ error: Error, context: LAContext, function: String) -> LocalAuthenticationError {
         if let laError = error as? LAError {
-            switch laError.code {
-            case .authenticationFailed:
-                logger.error("\(function) The user failed to provide valid credentials: \(laError.localizedDescription)")
-                return .authenticationFailed
-            case .userCancel:
-                logger.error("\(function) The user canceled the authentication process: \(laError.localizedDescription)")
-                return .userCanceled
-            case .userFallback:
-                logger.error("\(function) The user tapped the fallback button in the authentication dialog, but no fallback is available for the authentication policy: \(laError.localizedDescription)")
-                return .userFallback
-            case .systemCancel:
-                logger.error("\(function) The system canceled authentication: \(laError.localizedDescription)")
-                return .systemCancel
-            case .appCancel:
-                logger.error("\(function) The app canceled authentication: \(laError.localizedDescription)")
-                return .appCancel
-            case .notInteractive:
-                logger.error("\(function) Displaying the required authentication user interface is forbidden: \(laError.localizedDescription)")
-                return .notInteractive
-            case .biometryLockout:
-                logger.error("\(function) Biometry is locked because there were too many failed attempts: \(laError.localizedDescription)")
-                return .biometryLockout
-            case .biometryDisconnected:
-                logger.error("\(function) The device supports biometry only using a removable accessory, but the paired accessory isn’t connected: \(laError.localizedDescription)")
-                return .biometryDisconnected
-            case .passcodeNotSet:
-                logger.error("\(function) Passcode not set: \(laError.localizedDescription)")
-                return .noPasscodeSet
-            case .biometryNotAvailable:
-                logger.error("\(function) Biometry not available: \(laError.localizedDescription)")
-                return .biometryNotAvailable
-            case .biometryNotPaired:
-                logger.error("\(function) The device supports biometry only using a removable accessory, but no accessory is paired: \(laError.localizedDescription)")
-                return .biometryNotPaired
-            case .biometryNotEnrolled:
-                switch context.biometryType {
-                case .faceID:
-                    logger.error("\(function) No Face ID is enrolled on the device: \(laError.localizedDescription)")
-                    return .noFaceIdEnrolled
-                case .touchID:
-                    logger.error("\(function) No fingerprints are enrolled on the device: \(laError.localizedDescription)")
-                    return .noFingerprintEnrolled
-                default:
-                    logger.error("\(function) No biometrics enrolled: \(laError.localizedDescription)")
-                    return .biometricError
-                }
-            default:
-                logger.error("\(function) Unknown LAError: \(laError.localizedDescription)")
-                return .error(laError)
-            }
+            return handleLAError(laError, context: context, function: function)
         }
         /// Converts NSError from the LAError domain into a type-safe LAError and maps it to custom LocalAuthenticationError
         if let nsError = error as NSError?, nsError.domain == LAError.errorDomain {
             let laError = LAError(_nsError: nsError)
             logger.error("\(function) Caught NSError with LAError domain: \(nsError.localizedDescription)")
-            return mapToLocalAuthenticationError(laError, context: context, function: function)
+            return handleLAError(laError, context: context, function: function)
         }
         logger.error("\(function) Unknown error: \(error.localizedDescription)")
         return .error(error)
+    }
+    
+    /// Maps an `LAError` to a corresponding `LocalAuthenticationError` for consistent error handling.
+    /// - Parameters:
+    ///   - laError: The `LAError` received from the Local Authentication framework.
+    ///   - context: The `LAContext` used during authentication.
+    ///   - function: The name of the calling function for logging context.
+    /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
+    private func handleLAError(_ laError: LAError, context: LAContext, function: String) -> LocalAuthenticationError {
+        switch laError.code {
+        case .authenticationFailed:
+            return logAndReturn(.authenticationFailed, message: "The user failed to provide valid credentials", function: function, error: laError)
+        case .userCancel:
+            return logAndReturn(.userCanceled, message: "The user canceled the authentication process", function: function, error: laError)
+        case .userFallback:
+            return logAndReturn(.userFallback, message: "User tapped fallback button", function: function, error: laError)
+        case .systemCancel:
+            return logAndReturn(.systemCancel, message: "System canceled authentication", function: function, error: laError)
+        case .appCancel:
+            return logAndReturn(.appCancel, message: "App canceled authentication", function: function, error: laError)
+        case .notInteractive:
+            return logAndReturn(.notInteractive, message: "Displaying UI forbidden", function: function, error: laError)
+        case .biometryLockout:
+            return logAndReturn(.biometryLockout, message: "Biometry locked due to too many failed attempts", function: function, error: laError)
+        case .biometryDisconnected:
+            return logAndReturn(.biometryDisconnected, message: "Biometric accessory not connected", function: function, error: laError)
+        case .passcodeNotSet:
+            return logAndReturn(.noPasscodeSet, message: "Passcode not set", function: function, error: laError)
+        case .biometryNotAvailable:
+            return logAndReturn(.biometryNotAvailable, message: "Biometry not available", function: function, error: laError)
+        case .biometryNotPaired:
+            return logAndReturn(.biometryNotPaired, message: "No paired biometric accessory", function: function, error: laError)
+        case .biometryNotEnrolled:
+            return handleBiometryNotEnrolledError(context: context, laError: laError, function: function)
+        default:
+            return logAndReturn(.error(laError), message: "Unknown LAError", function: function, error: laError)
+        }
+    }
+    
+    /// Handles `.biometryNotEnrolled` errors by mapping them to specific biometric enrollment issues.
+    /// - Parameters:
+    ///   - context: The `LAContext` containing information about the current biometry type.
+    ///   - laError: The `LAError` instance with the `.biometryNotEnrolled` code.
+    ///   - function: The name of the calling function for contextual logging.
+    /// - Returns: A `LocalAuthenticationError` indicating the missing biometric enrollment type.
+    private func handleBiometryNotEnrolledError(context: LAContext, laError: LAError, function: String) -> LocalAuthenticationError {
+        switch context.biometryType {
+        case .faceID:
+            return logAndReturn(.noFaceIdEnrolled, message: "No Face ID enrolled", function: function, error: laError)
+        case .touchID:
+            return logAndReturn(.noFingerprintEnrolled, message: "No Touch ID enrolled", function: function, error: laError)
+        default:
+            return logAndReturn(.biometricError, message: "No biometrics enrolled", function: function, error: laError)
+        }
+    }
+    
+    /// Logs the specified error message and returns the given `LocalAuthenticationError`.
+    /// - Parameters:
+    ///   - error: The `LocalAuthenticationError` to return.
+    ///   - message: A descriptive message explaining the error context.
+    ///   - function: The name of the calling function, used for structured logging.
+    ///   - originalError: The original `Error` object for diagnostic information.
+    /// - Returns: The same `LocalAuthenticationError` that was passed in.
+    private func logAndReturn(_ error: LocalAuthenticationError, message: String, function: String, error originalError: Error) -> LocalAuthenticationError {
+        logger.error("\(function) \(message): \(originalError.localizedDescription)")
+        return error
     }
 }
