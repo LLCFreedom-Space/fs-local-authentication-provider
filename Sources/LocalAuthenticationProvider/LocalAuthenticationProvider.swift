@@ -160,7 +160,6 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
     private func handleLAError(_ laError: LAError, context: LAContext) -> LocalAuthenticationError {
         let localizedDescription = laError.localizedDescription
-        // swiftlint: disable cyclomatic_complexity
         switch laError.code {
         case .authenticationFailed:
             logger.error("User failed to provide valid credentials: \(localizedDescription)")
@@ -201,7 +200,6 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
             logger.error("Unknown LAError: \(localizedDescription)")
             return .error(laError)
         }
-        // swiftlint: enable cyclomatic_complexity
     }
     
     /// Handles `.biometryNotEnrolled` errors by mapping them to specific biometric enrollment issues.
