@@ -158,6 +158,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     ///   - laError: The `LAError` received from the Local Authentication framework.
     ///   - context: The `LAContext` used during authentication.
     /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
+    // swiftlint:disable:next cyclomatic_complexity
     private func handleLAError(_ laError: LAError, context: LAContext) -> LocalAuthenticationError {
         let localizedDescription = laError.localizedDescription
         switch laError.code {
