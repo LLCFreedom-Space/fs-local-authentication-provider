@@ -136,7 +136,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     ///   - error: The original error thrown by the Local Authentication framework.
     ///   - context: The `LAContext` used during authentication.
     /// - Returns: A `LocalAuthenticationError` that represents the mapped error condition.
-    private func mapToLocalAuthenticationError(
+    func mapToLocalAuthenticationError(
         _ error: Error,
         context: LAContext
     ) -> LocalAuthenticationError {
@@ -159,7 +159,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     ///   - context: The `LAContext` used during authentication.
     /// - Returns: `LocalAuthenticationError` that represents the equivalent error condition.
     // swiftlint:disable:next cyclomatic_complexity
-    private func handleLAError(_ laError: LAError, context: LAContext) -> LocalAuthenticationError {
+    func handleLAError(_ laError: LAError, context: LAContext) -> LocalAuthenticationError {
         let localizedDescription = laError.localizedDescription
         switch laError.code {
         case .authenticationFailed:
@@ -208,7 +208,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     ///   - context: The `LAContext` containing information about the current biometry type.
     ///   - laError: The `LAError` instance with the `.biometryNotEnrolled` code.
     /// - Returns: A `LocalAuthenticationError` indicating the missing biometric enrollment type.
-    private func handleBiometryNotEnrolledError(
+    func handleBiometryNotEnrolledError(
         context: LAContext,
         laError: LAError
     ) -> LocalAuthenticationError {
