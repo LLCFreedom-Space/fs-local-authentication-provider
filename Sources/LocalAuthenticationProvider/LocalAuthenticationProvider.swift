@@ -195,6 +195,12 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
         case .biometryNotPaired:
             logger.error("No paired biometric accessory: \(localizedDescription)")
             return .biometryNotPaired
+        case .invalidContext:
+            logger.error("Authentication context is invalid: \(localizedDescription)")
+            return .invalidContext
+        case .invalidDimensions:
+            logger.error("Biometric sensor data has invalid dimensions: \(localizedDescription)")
+            return .invalidDimensions
         case .biometryNotEnrolled:
             return handleBiometryNotEnrolledError(context: context, laError: laError)
         default:
