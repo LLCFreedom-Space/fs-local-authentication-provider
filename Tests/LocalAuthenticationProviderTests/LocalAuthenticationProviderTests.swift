@@ -242,4 +242,23 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             XCTAssert(opticIDType == .opticID)
         }
     }
+    
+    func testCheckBiometricAvailableWhenUnknownErrorWithoutNSError() async {
+        let context = MockLAContext(
+            canEvaluatePolicyError: nil,
+            canEvaluatePolicies: []
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.checkBiometricAvailable(with: .biometrics)
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.error(let error as NSError) {
+            XCTAssertEqual(error.domain, LAError.errorDomain)
+            XCTAssertEqual(error.code, LocalAuthenticationError.unknownError)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    
 }
