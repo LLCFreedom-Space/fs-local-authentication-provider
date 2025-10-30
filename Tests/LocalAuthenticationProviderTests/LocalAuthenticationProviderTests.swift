@@ -23,6 +23,7 @@
 //
 
 import XCTest
+import LocalAuthentication
 @testable import LocalAuthenticationProvider
 
 final class LocalAuthenticationProviderTests: XCTestCase {
@@ -34,8 +35,19 @@ final class LocalAuthenticationProviderTests: XCTestCase {
     }
     
     func testCanEvaluatePolicyWhenOwnerNotAuthenticateWithBiometricsIssue() async throws {
-        let result = try await provider.checkBiometricAvailable(with: .biometrics)
-        XCTAssertFalse(result)
+        let errorCode = LocalAuthenticationError.unknownError
+        let context = MockLAContext(
+            canEvaluatePolicyError: NSError(domain: LAError.errorDomain, code: errorCode)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.checkBiometricAvailable(with: .biometrics)
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.error(let thrownError) {
+            XCTAssertEqual((thrownError as NSError).code, errorCode)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
     }
     
     func testCanEvaluatePolicyWhenOwnerAlreadyAuthenticated() async throws {
@@ -46,73 +58,86 @@ final class LocalAuthenticationProviderTests: XCTestCase {
     }
     
     func testCanEvaluatePolicyWhenAccessDenied() async {
-        let errorCode = LocalAuthenticationError.denied
-        let context = MockLAContext(canEvaluatePolicyError: NSError(domain: "", code: errorCode))
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.authenticationFailed)
+        )
         let provider = LocalAuthenticationProvider(context: context)
         do {
-            _ = try await provider.checkBiometricAvailable(with: .biometrics)
+            _ = try await provider.authenticate(localizedReason: "Test")
             XCTFail("Error must be thrown")
-        } catch LocalAuthenticationError.deniedAccess {
+        } catch LocalAuthenticationError.authenticationFailed {
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
     func testCanEvaluatePolicyWhenPasscodeNotSet() async {
         let errorCode = LocalAuthenticationError.passcodeNotSet
-        let context = MockLAContext(canEvaluatePolicyError: NSError(domain: "", code: errorCode))
+        let context = MockLAContext(
+            canEvaluatePolicyError: NSError(domain: LAError.errorDomain, code: errorCode)
+        )
         let provider = LocalAuthenticationProvider(context: context)
         do {
             _ = try await provider.checkBiometricAvailable(with: .biometrics)
             XCTFail(".noPasscodeSet error must be thrown")
         } catch LocalAuthenticationError.noPasscodeSet {
         } catch {
-            XCTFail("Unexpected error thrown - must be .noPasscodeSet")
+            XCTFail("Unexpected error thrown: \(error), - must be .noPasscodeSet")
         }
     }
     
     func testCanEvaluatePolicyWhenBiometricsIssue() async {
         let errorCode = LocalAuthenticationError.noBiometricsEnrolled
-        let context = MockLAContext(canEvaluatePolicyError: NSError(domain: "", code: errorCode))
+        let context = MockLAContext(
+            canEvaluatePolicyError: NSError(domain: LAError.errorDomain, code: errorCode)
+        )
         let provider = LocalAuthenticationProvider(context: context)
         do {
             _ = try await provider.checkBiometricAvailable(with: .biometrics)
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometricError {
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
     func testCanEvaluatePolicyWhenBiometricsFaceIDFails() async {
         let errorCode = LocalAuthenticationError.noBiometricsEnrolled
-        let context = MockLAContext(canEvaluatePolicyError: NSError(domain: "", code: errorCode), biometryType: .faceID)
+        let context = MockLAContext(
+            canEvaluatePolicyError: NSError(domain: LAError.errorDomain, code: errorCode),
+            biometryType: .faceID
+        )
         let provider = LocalAuthenticationProvider(context: context)
         do {
             _ = try await provider.checkBiometricAvailable(with: .biometrics)
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.noFaceIdEnrolled {
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
     func testCanEvaluatePolicyWhenBiometricsTouchIDFails() async {
         let errorCode = LocalAuthenticationError.noBiometricsEnrolled
-        let context = MockLAContext(canEvaluatePolicyError: NSError(domain: "", code: errorCode), biometryType: .touchID)
+        let context = MockLAContext(
+            canEvaluatePolicyError: NSError(domain: LAError.errorDomain, code: errorCode),
+            biometryType: .touchID
+        )
         let provider = LocalAuthenticationProvider(context: context)
         do {
             _ = try await provider.checkBiometricAvailable(with: .biometrics)
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.noFingerprintEnrolled {
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
     func testCanEvaluatePolicyWhenUnknownError() async {
         let errorCode = LocalAuthenticationError.unknownError
-        let expectedError = NSError(domain: "", code: errorCode)
+        let expectedError = NSError(domain: LAError.errorDomain, code: errorCode)
         let context = MockLAContext(canEvaluatePolicyError: expectedError)
         let provider = LocalAuthenticationProvider(context: context)
         do {
@@ -121,7 +146,7 @@ final class LocalAuthenticationProviderTests: XCTestCase {
         } catch LocalAuthenticationError.error(let error) {
             XCTAssertEqual(error as NSError, expectedError)
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -137,14 +162,9 @@ final class LocalAuthenticationProviderTests: XCTestCase {
     }
     
     func testEvaluatePolicyWhenCheckFailed() async throws {
-        let failedResult = try await provider.setBiometricAuthentication(
-            localizedReason: "Please authenticate yourself for activate Biometric authentication"
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics]
         )
-        XCTAssertFalse(failedResult)
-    }
-    
-    func testEvaluatePolicyWhenBiometricsSetFailed() async throws {
-        let context = MockLAContext(canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics])
         let provider = LocalAuthenticationProvider(context: context)
         let failedResult = try await provider.setBiometricAuthentication(
             localizedReason: "Please authenticate yourself for activate Biometric authentication"
@@ -153,6 +173,11 @@ final class LocalAuthenticationProviderTests: XCTestCase {
     }
     
     func testAuthenticateWhenFailCheck() async throws {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID
+        )
+        let provider = LocalAuthenticationProvider(context: context)
         let failedResult = try await provider.authenticate(
             localizedReason: "Please authenticate yourself for activate Biometric authentication"
         )
@@ -167,7 +192,7 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometricError {
         } catch {
-            XCTFail("Unexpected error thrown")
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -215,6 +240,201 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             provider = LocalAuthenticationProvider(context: context)
             let opticIDType = await provider.getBiometricType()
             XCTAssert(opticIDType == .opticID)
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorUserCancel() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.userCancel)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.userCanceled {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorUserFallback() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.userFallback)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.userFallback {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorSystemCancel() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.systemCancel)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.systemCancel {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorAppCancel() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.appCancel)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.appCancel {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorNotInteractive() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.notInteractive)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.notInteractive {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorBiometryLockout() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.biometryLockout)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.biometryLockout {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorBiometryDisconnected() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.biometryDisconnected)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.biometryDisconnected {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorBiometryNotAvailable() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.biometryNotAvailable)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.biometryNotAvailable {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorBiometryNotPaired() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.biometryNotPaired)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.biometryNotPaired {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorInvalidContext() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.invalidContext)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.invalidContext {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorInvalidDimensions() async {
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: LAError(.invalidDimensions)
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.invalidDimensions {
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
+        }
+    }
+    
+    func testMapToLocalAuthenticationErrorGenericNSError() async {
+        let nsError = NSError(domain: "CustomDomain", code: 111)
+        let context = MockLAContext(
+            canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+            biometryType: .faceID,
+            evaluatePolicyError: nsError
+        )
+        let provider = LocalAuthenticationProvider(context: context)
+        do {
+            _ = try await provider.authenticate(localizedReason: "Test")
+            XCTFail("Error must be thrown")
+        } catch LocalAuthenticationError.error(let error) {
+            XCTAssertEqual((error as NSError).domain, "CustomDomain")
+            XCTAssertEqual((error as NSError).code, 111)
+        } catch {
+            XCTFail("Unexpected error thrown: \(error)")
         }
     }
 }
