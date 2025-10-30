@@ -16,7 +16,7 @@
 //  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 //
-//  LocalAuthenticationProviderLAErrorCasesTests.swift
+//  LocalAuthProviderLAErrorCasesTests.swift
 //
 //
 //  Created by Mykola Vasyk on 30.10.2025.
@@ -26,7 +26,7 @@ import XCTest
 import LocalAuthentication
 @testable import LocalAuthenticationProvider
 
-final class LocalAuthenticationProviderLAErrorCasesTests: XCTestCase {
+final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
     func testMapToLocalAuthenticationErrorUserCancel() async {
         let context = MockLAContext(
             canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
@@ -204,7 +204,8 @@ final class LocalAuthenticationProviderLAErrorCasesTests: XCTestCase {
     }
     
     func testMapToLocalAuthenticationErrorGenericNSError() async {
-        let nsError = NSError(domain: "CustomDomain", code: 111)
+        let customNSErrorCode = 111
+        let nsError = NSError(domain: "CustomDomain", code: customNSErrorCode)
         let context = MockLAContext(
             canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
             biometryType: .faceID,
@@ -216,7 +217,7 @@ final class LocalAuthenticationProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.error(let error) {
             XCTAssertEqual((error as NSError).domain, "CustomDomain")
-            XCTAssertEqual((error as NSError).code, 111)
+            XCTAssertEqual((error as NSError).code, customNSErrorCode)
         } catch {
             XCTFail("Unexpected error thrown: \(error)")
         }
