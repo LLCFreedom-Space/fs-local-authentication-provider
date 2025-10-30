@@ -259,6 +259,4 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
-    
-    
 }
