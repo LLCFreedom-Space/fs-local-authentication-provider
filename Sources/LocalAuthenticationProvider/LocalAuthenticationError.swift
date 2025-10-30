@@ -46,9 +46,6 @@ public enum LocalAuthenticationError: Error {
     /// A general biometric error occurred.
     case biometricError
     
-    /// Access to local authentication was denied.
-    case deniedAccess
-    
     /// No Face ID is enrolled on the device.
     case noFaceIdEnrolled
     
