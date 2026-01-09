@@ -175,7 +175,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
         }
     }
     
-#if os(macOS)
     func testMapToLocalAuthenticationErrorBiometryDisconnected() async {
         let context = MockLAContext(
             canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
@@ -223,5 +222,4 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
-#endif
 }
