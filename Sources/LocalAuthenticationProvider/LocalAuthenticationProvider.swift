@@ -73,14 +73,13 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `true` if biometric authentication was successfully set up, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during setup.
     public func setBiometricAuthentication(localizedReason: String) async throws -> Bool {
-        if try await checkBiometricAvailable(with: .biometrics) {
-            do {
-                return try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason)
-            } catch {
-                throw mapToLocalAuthenticationError(error, context: context)
-            }
-        } else {
-            return false
+        _ = try await checkBiometricAvailable(with: .biometrics)
+        do {
+            return try await context.evaluatePolicy(
+                .deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason
+            )
+        } catch {
+            throw mapToLocalAuthenticationError(error, context: context)
         }
     }
     
@@ -89,24 +88,19 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// - Returns: `true` if authentication was successful, `false` otherwise.
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
     public func authenticate(localizedReason: String) async throws -> Bool {
-        if try await checkBiometricAvailable(with: .biometrics) {
-            guard context.biometryType != .none else {
-                logger.error("\(#function) User face or fingerprint were not recognized")
-                throw LocalAuthenticationError.biometricError
-            }
-            
-            do {
-                if try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason) {
-                    return true
-                }
-            } catch {
-                throw mapToLocalAuthenticationError(error, context: context)
-            }
+        _ = try await checkBiometricAvailable(with: .biometrics)
+        guard context.biometryType != .none else {
             logger.error("\(#function) User face or fingerprint were not recognized")
-            return false
-        } else {
-            return false
+            throw LocalAuthenticationError.biometricError
         }
+        do {
+            if try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason) {
+                return true
+            }
+        } catch {
+            throw mapToLocalAuthenticationError(error, context: context)
+        }
+        return false
     }
     
     /// Retrieves the type of biometric authentication available on the device.
