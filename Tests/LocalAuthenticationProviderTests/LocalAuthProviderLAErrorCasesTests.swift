@@ -39,7 +39,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.userCanceled {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -55,7 +54,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.userFallback {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -71,7 +69,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.systemCancel {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -87,7 +84,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.appCancel {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -103,7 +99,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.notInteractive {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -119,7 +114,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometryLockout {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -135,7 +129,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometryNotAvailable {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -151,7 +144,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.invalidContext {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -171,7 +163,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTAssertEqual((error as NSError).domain, "CustomDomain")
             XCTAssertEqual((error as NSError).code, customNSErrorCode)
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
 #if os(macOS)
@@ -187,7 +178,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometryDisconnected {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -203,7 +193,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.biometryNotPaired {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
@@ -219,7 +208,6 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.invalidDimensions {
         } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
 #endif
