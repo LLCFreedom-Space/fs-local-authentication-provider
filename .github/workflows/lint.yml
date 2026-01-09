@@ -12,7 +12,7 @@ jobs:
     runs-on: macOS-14
     steps:
       - uses: actions/checkout@v4
-      - name: Switch Xcode 🔄
-        run: sudo xcode-select --switch /Applications/Xcode_15.4.app
-      - name: Swift Lint
-        run: swiftlint --strict
+      - name: Install & Run SwiftLint
+        run: |
+          brew install swiftlint
+          swiftlint --strict
