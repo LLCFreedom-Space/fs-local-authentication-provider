@@ -45,8 +45,6 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             XCTFail("Error must be thrown")
         } catch LocalAuthenticationError.error(let thrownError) {
             XCTAssertEqual((thrownError as NSError).code, errorCode)
-        } catch {
-            XCTFail("Unexpected error thrown: \(error)")
         }
     }
     
