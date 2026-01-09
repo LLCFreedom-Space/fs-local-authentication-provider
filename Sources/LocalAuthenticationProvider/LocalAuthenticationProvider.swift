@@ -177,26 +177,28 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
         case .biometryLockout:
             logger.error("Biometry locked due to too many failed attempts: \(localizedDescription)")
             return .biometryLockout
-        case .biometryDisconnected:
-            logger.error("Biometric accessory not connected: \(localizedDescription)")
-            return .biometryDisconnected
         case .passcodeNotSet:
             logger.error("Passcode not set: \(localizedDescription)")
             return .noPasscodeSet
         case .biometryNotAvailable:
             logger.error("Biometry not available: \(localizedDescription)")
             return .biometryNotAvailable
-        case .biometryNotPaired:
-            logger.error("No paired biometric accessory: \(localizedDescription)")
-            return .biometryNotPaired
         case .invalidContext:
             logger.error("Authentication context is invalid: \(localizedDescription)")
             return .invalidContext
+        case .biometryNotEnrolled:
+            return handleBiometryNotEnrolledError(context: context, laError: laError)
+#if os(macOS)
+        case .biometryDisconnected:
+            logger.error("Biometric accessory not connected: \(localizedDescription)")
+            return .biometryDisconnected
+        case .biometryNotPaired:
+            logger.error("No paired biometric accessory: \(localizedDescription)")
+            return .biometryNotPaired
         case .invalidDimensions:
             logger.error("Biometric sensor data has invalid dimensions: \(localizedDescription)")
             return .invalidDimensions
-        case .biometryNotEnrolled:
-            return handleBiometryNotEnrolledError(context: context, laError: laError)
+#endif
         default:
             logger.error("Unknown LAError: \(localizedDescription)")
             return .error(laError)
