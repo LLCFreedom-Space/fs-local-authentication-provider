@@ -9,10 +9,10 @@ concurrency:
 
 jobs:
   SwiftLint:
-    runs-on: macOS-13
+    runs-on: macOS-14
     steps:
       - uses: actions/checkout@v4
-      - name: Switch Xcode 🔄
-        run: sudo xcode-select --switch /Applications/Xcode_15.0.app
-      - name: Swift Lint
-        run: swiftlint --strict
+      - name: Install & Run SwiftLint
+        run: |
+          brew install swiftlint
+          swiftlint --strict

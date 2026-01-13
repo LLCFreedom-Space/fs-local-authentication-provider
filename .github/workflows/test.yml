@@ -13,13 +13,11 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macOS-13
+    runs-on: macOS-14
     steps:
     - uses: actions/checkout@v4
     - name: Switch Xcode 🔄
-      run: sudo xcode-select --switch /Applications/Xcode_15.0.app
-    - name: Swift Lint
-      run: swiftlint --strict
+      run: sudo xcode-select --switch /Applications/Xcode_15.4.app
     - name: Test iOS
       run: xcodebuild test -scheme fs-local-authentication-provider -destination "platform=iOS Simulator,name=iPhone 15" -enableCodeCoverage YES -skipPackagePluginValidation
     - name: Fetch Coverage

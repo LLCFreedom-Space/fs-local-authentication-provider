@@ -46,9 +46,6 @@ public enum LocalAuthenticationError: Error {
     /// A general biometric error occurred.
     case biometricError
     
-    /// Access to local authentication was denied.
-    case deniedAccess
-    
     /// No Face ID is enrolled on the device.
     case noFaceIdEnrolled
     
@@ -57,6 +54,42 @@ public enum LocalAuthenticationError: Error {
     
     /// A passcode isn’t set on the device.
     case noPasscodeSet
+    
+    /// The app canceled authentication.
+    case appCancel
+    
+    /// The system canceled authentication.
+    case systemCancel
+    
+    /// The device supports biometry only using a removable accessory, but the paired accessory isn’t connected.
+    case biometryDisconnected
+
+    /// Biometry is locked because there were too many failed attempts.
+    case biometryLockout
+    
+    /// Biometry is not available on the device.
+    case biometryNotAvailable
+    
+    /// The user has no enrolled biometric identities.
+    case biometryNotEnrolled
+    
+    /// The device supports biometry only using a removable accessory, but no accessory is paired.
+    case biometryNotPaired
+    
+    /// The user failed to provide valid credentials.
+    case authenticationFailed
+    
+    /// The context was previously invalidated.
+    case invalidContext
+    
+    /// Data from the Touch ID or Face ID sensor is transmitted with incorrect "sizes".
+    case invalidDimensions
+    
+    /// Displaying the required authentication user interface is forbidden.
+    case notInteractive
+
+    /// The user tapped the fallback button in the authentication dialog, but no fallback is available for the authentication policy.
+    case userFallback
     
     /// An underlying error occurred.
     ///

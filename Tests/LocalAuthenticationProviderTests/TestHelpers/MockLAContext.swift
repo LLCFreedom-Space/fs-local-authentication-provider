@@ -36,6 +36,7 @@ final class MockLAContext: LAContext {
     private var canEvaluatePolicyError: NSError?
     private let canEvaluatePolicies: [LAPolicy]
     private let _biometryType: LABiometryType
+    private let evaluatePolicyError: Error?
     
     /// Initializes a new `MockLAContext` instance for testing.
     ///
@@ -48,12 +49,14 @@ final class MockLAContext: LAContext {
         successEvaluatePolicies: [LAPolicy] = [],
         canEvaluatePolicyError: NSError? = nil,
         canEvaluatePolicies: [LAPolicy] = [],
-        biometryType: LABiometryType = .none
+        biometryType: LABiometryType = .none,
+        evaluatePolicyError: Error? = nil
     ) {
         self.successEvaluatePolicies = successEvaluatePolicies
         self.canEvaluatePolicyError = canEvaluatePolicyError
         self.canEvaluatePolicies = canEvaluatePolicies
         self._biometryType = biometryType
+        self.evaluatePolicyError = evaluatePolicyError
     }
     
     /// Overrides `canEvaluatePolicy` to simulate specific evaluation results for testing.
@@ -74,6 +77,9 @@ final class MockLAContext: LAContext {
     /// - localizedReason: The reason for authentication.
     /// - Returns: `true` if authentication is successful, `false` otherwise.
     override func evaluatePolicy(_ policy: LAPolicy, localizedReason: String) async throws -> Bool {
+        if let error = evaluatePolicyError {
+            throw error
+        }
         return successEvaluatePolicies.contains(policy)
     }
 }
