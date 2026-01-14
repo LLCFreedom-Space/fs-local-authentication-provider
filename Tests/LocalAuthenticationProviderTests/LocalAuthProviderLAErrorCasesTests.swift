@@ -165,7 +165,7 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
         } catch {
         }
     }
-    
+#if compiler(>=6.0)
     @available(iOS 18.0, *)
         func testMapToLocalAuthenticationErrorCompanionNotAvailable() async {
             let context = MockLAContext(
@@ -181,6 +181,7 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
             } catch {
             }
         }
+#endif
 #if os(macOS)
     func testMapToLocalAuthenticationErrorBiometryDisconnected() async {
         let context = MockLAContext(
