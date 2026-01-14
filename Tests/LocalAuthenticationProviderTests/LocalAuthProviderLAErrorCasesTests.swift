@@ -165,6 +165,22 @@ final class LocalAuthProviderLAErrorCasesTests: XCTestCase {
         } catch {
         }
     }
+    
+    @available(iOS 18.0, *)
+        func testMapToLocalAuthenticationErrorCompanionNotAvailable() async {
+            let context = MockLAContext(
+                canEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
+                biometryType: .faceID,
+                evaluatePolicyError: LAError(.companionNotAvailable)
+            )
+            let provider = LocalAuthenticationProvider(context: context)
+            do {
+                _ = try await provider.authenticate(localizedReason: "Test")
+                XCTFail("Error must be thrown")
+            } catch LocalAuthenticationError.companionNotAvailable {
+            } catch {
+            }
+        }
 #if os(macOS)
     func testMapToLocalAuthenticationErrorBiometryDisconnected() async {
         let context = MockLAContext(

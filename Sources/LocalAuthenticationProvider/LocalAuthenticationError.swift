@@ -91,6 +91,9 @@ public enum LocalAuthenticationError: Error {
     /// The user tapped the fallback button in the authentication dialog, but no fallback is available for the authentication policy.
     case userFallback
     
+    /// The authentication failed because the companion device (e.g., Apple Watch) is not available.
+    case companionNotAvailable
+    
     /// An underlying error occurred.
     ///
     /// - Parameter error: The underlying error.
