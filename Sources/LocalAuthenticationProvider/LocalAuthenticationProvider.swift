@@ -199,9 +199,22 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
             logger.error("Biometric sensor data has invalid dimensions: \(localizedDescription)")
             return .invalidDimensions
 #endif
-        default:
+#if compiler(>=6.0)
+        case .companionNotAvailable:
+            if #available(iOS 18.0, *) {
+                logger.error("Companion device not available: \(localizedDescription)")
+                return .companionNotAvailable
+            } else {
+                logger.error("Unknown LAError: \(localizedDescription)")
+                return .error(laError)
+            }
+#endif
+        @unknown default:
             logger.error("Unknown LAError: \(localizedDescription)")
             return .error(laError)
+            // .touchIDLockout (depricated)
+            // .touchIDNotEnrolled (depricated)
+            // .touchIDNotAvailable (depricated)
         }
     }
     
