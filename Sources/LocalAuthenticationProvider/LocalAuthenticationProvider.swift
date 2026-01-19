@@ -76,7 +76,8 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
         _ = try await checkBiometricAvailable(with: .biometrics)
         do {
             return try await context.evaluatePolicy(
-                .deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason
+                .deviceOwnerAuthentication,
+                localizedReason: localizedReason
             )
         } catch {
             throw mapToLocalAuthenticationError(error, context: context)
@@ -94,7 +95,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
             throw LocalAuthenticationError.biometricError
         }
         do {
-            if try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason) {
+            if try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: localizedReason) {
                 return true
             }
         } catch {
@@ -106,7 +107,7 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
     /// Retrieves the type of biometric authentication available on the device.
     /// - Returns: The available biometric type (.none, .touchID, .faceID, or .opticID if available).
     public func getBiometricType() async -> BiometricType {
-        let result = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
+        let result = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
         logger.log("\(#function) evaluated policy with result \(result)")
         if context.biometryType == .none {
             return .none
