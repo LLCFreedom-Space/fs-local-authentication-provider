@@ -148,7 +148,6 @@ public final class LocalAuthenticationProvider: LocalAuthenticationProviderProto
         let result = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil)
         logger.log("\(#function) evaluated policy with result \(result)")
         return context.resolvedBiometricType
-
     }
     
     /// Retrieves the type of  authentication for policy available on the device.
