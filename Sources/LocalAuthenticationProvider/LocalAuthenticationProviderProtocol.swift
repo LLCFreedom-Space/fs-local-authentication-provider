@@ -40,6 +40,13 @@ public protocol LocalAuthenticationProviderProtocol {
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during setup.
     func setBiometricAuthentication(localizedReason: String) async throws -> Bool
     
+    /// Sets up authentication with biometry, Apple Watch, or the device passcode with the given localized reason, preparing for authentication but not initiating it immediately.
+    ///
+    /// - Parameter localizedReason: A string explaining why authentication is being requested.
+    /// - Returns: `true` if  authentication was successfully set up, `false` otherwise.
+    /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during setup.
+    func setOwnerAuthentication(localizedReason: String) async throws -> Bool
+
     /// Authenticates the user using biometric authentication with the given localized reason.
     ///
     /// - Parameter localizedReason: A string explaining why authentication is being requested.
@@ -47,8 +54,22 @@ public protocol LocalAuthenticationProviderProtocol {
     /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
     func authenticate(localizedReason: String) async throws -> Bool
     
+    /// Authenticates the user using policy authentication with given localized reason.
+    ///
+    /// - Parameters:
+    ///   - police: `LocalAuthenticationPolicy`
+    ///   - localizedReason:  A string explaining why authentication is being requested.
+    /// - Returns: `true` if authentication was successful, `false` otherwise.
+    /// - Throws: An appropriate `LocalAuthenticationError` if an error occurs during authentication.
+    func authenticate(with police: LocalAuthenticationPolicy, localizedReason: String) async throws -> Bool
+    
     /// Retrieves the type of biometric authentication available on the device.
     ///
     /// - Returns: The available biometric type (.none, .touchID, .faceID, or .opticID if available).
     func getBiometricType() async -> BiometricType
+        
+    /// Retrieves the type of  authentication for policy available on the device.
+    ///
+    /// - Returns: The available biometric type (.none, .touchID, .faceID, or .opticID if available).
+    func getBiometricType(for policy: LocalAuthenticationPolicy) async -> BiometricType
 }
