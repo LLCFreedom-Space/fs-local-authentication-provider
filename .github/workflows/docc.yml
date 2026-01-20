@@ -24,7 +24,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Build All DocC 🛠
         run: |
           swift package resolve;
@@ -36,10 +36,10 @@ jobs:
           echo "<script>window.location.href += \"/documentation/localauthenticationprovider\"</script>" > docs/index.html;
 
       - name: Upload artifact 📜
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           # Upload docs directory
           path: 'docs'
       - name: Deploy to GitHub Pages 🐙
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
