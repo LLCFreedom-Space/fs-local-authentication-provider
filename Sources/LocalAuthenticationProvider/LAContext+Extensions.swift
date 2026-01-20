@@ -10,20 +10,25 @@ import LocalAuthentication
 
 extension LAContext {
     internal func canEvaluate(policy: LocalAuthenticationPolicy, error: NSErrorPointer) -> Bool {
-        let localPolicy: LAPolicy
-        switch policy {
-        case .authentication:
-            localPolicy = .deviceOwnerAuthentication
-        case .biometrics:
-            localPolicy = .deviceOwnerAuthenticationWithBiometrics
-#if os(macOS)
-        case .watch:
-            localPolicy = .deviceOwnerAuthenticationWithWatch
-        case .biometricsOrWatch:
-            localPolicy = .deviceOwnerAuthenticationWithBiometricsOrWatch
-#endif
+        return self.canEvaluatePolicy(policy.laPolicy, error: error)
+    }
+    
+    /// Resolves the biometric type supported by the current context.
+    var resolvedBiometricType: BiometricType {
+        if biometryType == .none {
+            return .none
         }
-
-        return self.canEvaluatePolicy(localPolicy, error: error)
+        if biometryType == .faceID {
+            return .faceID
+        }
+        if biometryType == .touchID {
+            return .touchID
+        }
+        if #available(iOS 17.0, macOS 14.0, *) {
+            if biometryType == .opticID {
+                return .opticID
+            }
+        }
+        return .none
     }
 }

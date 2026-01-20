@@ -148,6 +148,17 @@ final class LocalAuthenticationProviderTests: XCTestCase {
         }
     }
     
+    func testEvaluatePolicyWhenAuthenticationSetSuccessful() async throws {
+        let context = MockLAContext(
+            successEvaluatePolicies: [.deviceOwnerAuthentication],
+            canEvaluatePolicies: [.deviceOwnerAuthentication])
+        let provider = LocalAuthenticationProvider(context: context)
+        let successResult = try await provider.setOwnerAuthentication(
+            localizedReason: "Please authenticate yourself for activate Biometric authentication"
+        )
+        XCTAssert(successResult)
+    }
+    
     func testEvaluatePolicyWhenBiometricsSetSuccessful() async throws {
         let context = MockLAContext(
             successEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
@@ -194,6 +205,19 @@ final class LocalAuthenticationProviderTests: XCTestCase {
         }
     }
     
+    func testAuthenticationWhenSuccessCheckAuthenticationType() async throws {
+        let context = MockLAContext(
+            successEvaluatePolicies: [.deviceOwnerAuthentication],
+            canEvaluatePolicies: [.deviceOwnerAuthentication],
+            biometryType: .faceID)
+        let provider = LocalAuthenticationProvider(context: context)
+        let successResult = try await provider.authenticate(
+            with: .authentication,
+            localizedReason: "Please authenticate yourself for activate Biometric authentication"
+        )
+        XCTAssert(successResult)
+    }
+    
     func testAuthenticationWhenSuccessCheckBiometryType() async throws {
         let context = MockLAContext(
             successEvaluatePolicies: [.deviceOwnerAuthenticationWithBiometrics],
@@ -215,6 +239,30 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             localizedReason: "Please authenticate yourself for activate Biometric authentication"
         )
         XCTAssertFalse(failedResult)
+    }
+    
+    func testGetBiometryTypeWithWhenSuccess() async throws {
+        var context = MockLAContext(biometryType: .none)
+        var provider = LocalAuthenticationProvider(context: context)
+        let nonType = await provider.getBiometricType(for: .authentication)
+        
+        XCTAssert(nonType == .none)
+        
+        context = MockLAContext(biometryType: .faceID)
+        provider = LocalAuthenticationProvider(context: context)
+        let faceIDType = await provider.getBiometricType(for: .authentication)
+        XCTAssert(faceIDType == .faceID)
+        
+        context = MockLAContext(biometryType: .touchID)
+        provider = LocalAuthenticationProvider(context: context)
+        let touchIDType = await provider.getBiometricType(for: .authentication)
+        XCTAssert(touchIDType == .touchID)
+        if #available(iOS 17.0, macOS 14.0, *) {
+            context = MockLAContext(biometryType: .opticID)
+            provider = LocalAuthenticationProvider(context: context)
+            let opticIDType = await provider.getBiometricType(for: .authentication)
+            XCTAssert(opticIDType == .opticID)
+        }
     }
     
     func testGetBiometryTypeWhenSuccess() async throws {
@@ -273,6 +321,7 @@ final class LocalAuthenticationProviderTests: XCTestCase {
             XCTFail("Unexpected error thrown: \(error)")
         }
     }
+    
     func testMapToLocalAuthenticationError_WhenNSErrorIsCaught() async {
         class MockNSError: NSError, @unchecked Sendable {}
         let errorDomain = LAError.errorDomain
